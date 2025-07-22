@@ -1,47 +1,52 @@
-System Architecture
-Core workflow:
+This repository implements a modular agent orchestration framework using **OpenAI’s Agents SDK** to route HR-related queries, perform backend computations, and return structured, reliable responses.
 
-Input: The platform accepts a rich, metadata-enriched query payload representing a user query from upstream chat or web frontends.
+---
 
-Master Agent: All requests are routed through the Master Agent, which uses an OpenAI agent as the core reasoning/NLU engine. This agent classifies the intent, extracts action and slots, and determines the downstream resource.
+## 📌 System Architecture
 
-Agent Pool: Depending on the action and extracted parameters, the Master Agent routes the query to the appropriate business/domain agent (DarwinBoxAgent, CarelineAgent, etc.) for logic execution.
+### 🔁 Core Workflow
 
-MCP Tool Invocation: For queries requiring backend computation or records access, the agent invokes tools on the backend MCP server (compliant JSON-RPC invocation; see Postman screenshot).
+1. **Input**  
+   Receives a metadata-rich query payload from upstream chat or web platforms.
 
-Response: A unified response object is returned, with robust error reporting and validation.
+2. **Master Agent**  
+   Acts as the central orchestrator. Uses an OpenAI Agent (via `openai.Agent`, `Runner`) to:
+   - Classify user intent
+   - Extract action, app, category, and relevant parameters
+   - Route to appropriate domain logic or tool
 
-Agents / Components
-Master Agent: Orchestrates all intent extraction and downstream agent/tool selection, using the OpenAI Agents SDK.
+3. **Agent Pool**  
+   Based on the extracted intent, routes the request to a domain-specific business agent such as:
+   - `DarwinBoxAgent`
+   - `CarelineAgent`
+   - `OtherAgent` (extensible)
 
-DarwinBoxAgent & Others: Implement business-logic, performing validations and executing mapped actions.
+4. **MCP Tool Invocation**  
+   For backend data retrieval or business actions, calls JSON-RPC-compliant tools via the MCP server using a unified interface (`MCPServerClient`).
 
-MCPServerClient: Handles all backend MCP tool calls (for actions like viewUAN, viewListOfReportees) via JSON-RPC.
+5. **Response**  
+   Returns a standardized response with validation and error metadata.
 
-Highlights
-Modular, extensible agent design for onboarding new domains (CarelineAgent, OtherAgent, etc.)
+---
 
-Pluggable orchestration logic to support new business actions and NLU improvements.
+## 🧱 Components & Responsibilities
 
-Native support for async, scalable FastAPI deployment.
+### 🔹 `MasterAgent`
+- Central decision-maker
+- Uses OpenAI Agent for NLU + tool reasoning
+- Forwards request to downstream logic/tool
 
-Seamless, contract-true integration with backend MCP as seen in the example Postman request.
+### 🔹 `DarwinBoxAgent`, `CarelineAgent`, etc.
+- Execute specific business logic
+- Perform validations
+- Respond with structured data
 
-How It Works
-Request: Receives user query + metadata (see left-most JSON in the diagram).
+### 🔹 `MCPServerClient`
+- Communicates with backend MCP tools
+- Follows JSON-RPC contract
+- Example request:
 
-Master Agent: Uses OpenAI agent to extract (action, app, category, slots) per schema.
-
-Agent or Tool:
-
-If business logic: delegates to DarwinBoxAgent or another agent.
-
-If tool/record fetch: invokes MCPServerClient to backend /mcp endpoint using a JSON-RPC payload.
-
-Response: Unified and error-tolerant response sent back upstream.
-
-Sample MCP Tool Call
-json
+```json
 {
   "method": "tools/call",
   "params": {
@@ -51,26 +56,3 @@ json
     }
   }
 }
-Directory Structure
-main.py: FastAPI entrypoint.
-
-core/master_agent.py: Central orchestrator, select agents/tools.
-
-orchestration.py: OpenAI agent definition, intent extraction.
-
-custom_agents/: Domain business agents (e.g., DarwinBoxAgent).
-
-integration/mcp_client.py: Backend MCP client.
-
-mod/models.py: Request/response models.
-
-Setup
-Clone the repo.
-
-Install dependencies (pip install -r requirements.txt)
-
-Set your OPENAI_API_KEY in your environment.
-
-Start the FastAPI server.
-
-Test MCP tool flow using /query endpoint or Postman as shown above.
