@@ -12,24 +12,36 @@ class MasterAgent:
             "careline": CarelineAgent(),
         }
         self.mcp_client = MCPServerClient(base_url="http://localhost:3001/mcp")
+        # Fetch the list of available tools at init or cache it if performance is a concern
+        self.mcp_tools_list = self.mcp_client.fetch_tools()
+        print("Available MCP Tools:", self.mcp_tools_list)
+
 
     async def route_request(self, req: QueryRequest):
         intent_dict = await extract_intent_and_slots(req)
-# always ensure userId present in data
         intent_dict["data"]["userId"] = req.userId
-
         intent = Intent(**intent_dict)
         print(f"Extracted intent: {intent}")
-        mcp_tools = {
-            "view_uan": "viewUAN",
-            "view_list_of_reportees": "viewListOfReportees"
-        }
-        action_key = intent.action.replace("-", "_").replace(" ", "_").lower()
-        tool_endpoint = mcp_tools.get(action_key)
 
-        if tool_endpoint:
+        # Get the action key (normalization as in your original code)
+        action_key = intent.action.replace("-", "_").replace(" ", "_").lower()
+
+        # Find the best matching tool by name (can extend to fuzzy/semantic match)
+        matched_tool = None
+        for tool in self.mcp_tools_list:
+            if isinstance(tool, dict) and "name" in tool:
+                tool_name = tool["name"]
+            else:
+                tool_name = tool
+            if tool_name.lower() == action_key:
+                matched_tool = tool_name
+                break
+
+
+        if matched_tool:
             data = {"userId": req.userId}
-            mcp_result = self.mcp_client.call_action(tool_endpoint, data)
+            mcp_result = self.mcp_client.call_action(matched_tool, data)
+            print(f"MCP tool result: {mcp_result}")
             return AgentResponse(success=True, message="MCP tool executed", data=mcp_result), "mcp"
 
         agent_name = (intent.app or "").lower()

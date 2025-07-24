@@ -32,7 +32,31 @@ class MCPServerClient:
             return resp.json()
         except Exception as e:
             return {"status": "error", "err": str(e), "tool": tool_name, "payload": data}
-        
+    
+    def fetch_tools(self):
+        # Use JSON-RPC method `tools/list`
+        data = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/list",
+            "params": {}
+        }
+        try:
+            resp = requests.post(
+                self.base_url,
+                json=data,
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json, text/event-stream"
+                },
+                timeout=10
+            )
+            #print(f"Status: {resp.status_code}, Response: {resp.text}")
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print(f"Error fetching tools: {e}")
+            return []
 
         #response formatter
         # Agent-3 humanize response
