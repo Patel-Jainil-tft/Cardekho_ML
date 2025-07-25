@@ -20,9 +20,22 @@ class MasterAgent:
         self.mcp_tools_list = tools_resp.get("result", {}).get("tools", [])
         logging.info(f"Available MCP Tools: {[t['name'] for t in self.mcp_tools_list]}")
 
+    @staticmethod
+    def _extract_user_id(req):
+        # Prefer token->darwinbox->employee_no if present
+        token = getattr(req, "token", None)
+        if token and isinstance(token, dict):
+            dbx = token.get("darwinbox")
+            if dbx and isinstance(dbx, dict):
+                emp_no = dbx.get("employee_no")
+                if emp_no:
+                    return emp_no
+        return req.userId or ""
+
     async def route_request(self, req: QueryRequest):
         intent_dict = await extract_intent_and_slots(req)
-        intent_dict["data"]["userId"] = req.userId
+        user_id = self._extract_user_id(req)
+        intent_dict["data"]["userId"] = user_id
         intent = Intent(**intent_dict)
         action_key = intent.action.replace("-", "_").replace(" ", "_").lower()
 
