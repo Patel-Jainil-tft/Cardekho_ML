@@ -17,7 +17,7 @@ class DarwinBoxAgent:
         instructions = (
             "You are the DarwinBox Tool Selector agent for HR workflows.\n"
             "Given an HR intent, extracted action, and parameters, "
-            "choose ONLY the correct DarwinBox MCP tool name from the supported list for this request.\n"
+            "Based upon the given information choose DarwinBox MCP tool name that best represents what the user wants to do from the supported list.If it is not available in supported list simply return NONE\n"
             "Respond ONLY with the tool name as a plain string—no explanation, JSON, or markdown.\n"
             "Supported tools:\n" +
             "\n".join(f"- {tool}" for tool in self.tool_names)
@@ -31,12 +31,18 @@ class DarwinBoxAgent:
 
     async def handle(self, intent: Intent) -> AgentResponse:
         user_prompt = (
-            f"HR action: {intent.action}\nExtracted fields: {intent.data}\n"
+            f"HR action: {intent.action}\nExtracted fields: {intent.data}\nUser Input: {intent.user_input}\n"
             "Which DarwinBox MCP tool from the supported list is the best match?"
         )
         result = await Runner.run(self.tool_agent, user_prompt)
         tool_name = result.final_output.strip().strip('"').strip("'")
-
+        print(f"Selected tool: {tool_name}")
+        if tool_name.upper() == "NONE":
+            return AgentResponse(
+                success=False,
+                message="Sorry, the requested action is not supported by DarwinBox MCP tools.",
+                tool=tool_name
+            )
         def get_user_id(data):
             for k in ["userId", "userid", "id"]:
                 if k in data:
@@ -44,6 +50,7 @@ class DarwinBoxAgent:
             return None
 
         user_id = get_user_id(intent.data)
+        print(f"Extracted USER_ID: {user_id}")
         if not user_id:
             return AgentResponse(
                 success=False,

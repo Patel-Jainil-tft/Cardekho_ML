@@ -20,6 +20,7 @@ class QueryRequest(BaseModel):
 
 class Intent(BaseModel):
     app: str
+    user_input: str
     action: str
     category: Optional[str]
     data: Dict[str, Any]
