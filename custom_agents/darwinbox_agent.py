@@ -57,8 +57,11 @@ class DarwinBoxAgent:
                 message="userId is required for DarwinBox operations.",
                 missing="userId"
             )
+        active = intent.data.get("active")
+        print(f"Extracted ACTIVE status: {active}")
 
-        mcp_payload = {"userId": user_id}
+        mcp_payload = {"userId": user_id,
+                       "active": active }
         if tool_name.lower() == "viewreimbursementstatus":
             date_val = intent.data.get("appliedDate")
             if not date_val:
