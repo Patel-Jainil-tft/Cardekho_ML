@@ -36,7 +36,12 @@ class MasterAgent:
         intent_dict = await extract_intent_and_slots(req)
         user_id = self._extract_user_id(req)
         intent_dict["data"]["userId"] = user_id
+
+        if hasattr(req, "active"):
+            intent_dict["data"]["active"] = req.active
+
         intent = Intent(**intent_dict)
+        print(f"Received intent: {intent}")
         action_key = intent.action.replace("-", "_").replace(" ", "_").lower()
 
         matched_tool = None
@@ -47,7 +52,8 @@ class MasterAgent:
                 break
 
         if matched_tool:
-            mcp_payload = {"userId": req.userId}
+            mcp_payload = {"userId": req.userId,
+                           "active": req.active }
             if matched_tool.lower() == "viewreimbursementstatus":
                 date_val = intent.data.get("appliedDate")
                 if not date_val:

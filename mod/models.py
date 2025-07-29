@@ -19,6 +19,7 @@ class QueryRequest(BaseModel):
     FollowupAgent: Optional[str] = None
     applicable: Optional[list] = None   # New
     token: Optional[dict] = None        # New
+    active : int
 
 class Intent(BaseModel):
     app: str
