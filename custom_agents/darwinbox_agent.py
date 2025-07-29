@@ -13,7 +13,7 @@ class DarwinBoxAgent:
         resp = self.mcp_client.fetch_tools()
         self.mcp_tools_list = resp.get("result", {}).get("tools", [])
         self.tool_names = [tool["name"] for tool in self.mcp_tools_list]
-
+        
         instructions = (
             "You are the DarwinBox Tool Selector agent for HR workflows.\n"
             "Given an HR intent, extracted action, and parameters, "
@@ -36,7 +36,7 @@ class DarwinBoxAgent:
         )
         result = await Runner.run(self.tool_agent, user_prompt)
         tool_name = result.final_output.strip().strip('"').strip("'")
-
+        print((f"intented data: {intent.data}, tool_name: {tool_name}"))
         def get_user_id(data):
             for k in ["userId", "userid", "id"]:
                 if k in data:
@@ -50,8 +50,11 @@ class DarwinBoxAgent:
                 message="userId is required for DarwinBox operations.",
                 missing="userId"
             )
+        active = intent.data.get("active")
+        print(f"Extracted ACTIVE status: {active}")
 
-        mcp_payload = {"userId": user_id}
+        mcp_payload = {"userId": user_id,
+                       "active": active }
         if tool_name.lower() == "viewreimbursementstatus":
             date_val = intent.data.get("appliedDate")
             if not date_val:
@@ -61,8 +64,26 @@ class DarwinBoxAgent:
                     missing="appliedDate"
                 )
             mcp_payload["appliedDate"] = date_val
+        elif tool_name.lower() == "updateuserprofile":
+            print(f"Extracted data for update: {intent.data}")
+            update_fields = [
+            "updated_email_id",
+            "updated_mobile_number",
+            "salary_account_number",
+            "IFSC_code",
+            "marriage_status_to"
+            ]
+            update_data = {
+            field: intent.data[field]
+            for field in update_fields
+            if field in intent.data and intent.data[field]
+            }
 
+            mcp_payload["updateData"] = update_data 
+
+           
         logging.info(f"Selected tool: {tool_name} with payload: {mcp_payload}")
+        print(f"Selected tool: {tool_name} with payload: {mcp_payload}")
         mcp_result = self.mcp_client.call_action(tool_name, mcp_payload)
         human_message = await format_mcp_response(mcp_result)
         return AgentResponse(
