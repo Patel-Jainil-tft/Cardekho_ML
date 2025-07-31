@@ -20,6 +20,7 @@ class QueryRequest(BaseModel):
     active: int
 
 class Intent(BaseModel):
+    user_input: str
     app: str
     action: str
     category: Optional[str]
