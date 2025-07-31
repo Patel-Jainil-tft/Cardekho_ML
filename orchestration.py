@@ -13,8 +13,7 @@ instructions = (
     "Classify user queries into one of the supported actions below, and extract all required parameters for that action. "
     "Respond with only a JSON object: {\"app\":..., \"action\":..., \"category\":..., \"data\":{...}} per the schema. "
     "If the user only wants to update marriage status, set app to 'careline'; otherwise use 'darwinbox'.\n"
-    "Do NOT output any explanation, header, footer, or extra text. Do NOT use markdown or code blocks. Output JSON only.\n"
-)
+    
 for action, params in ACTION_SCHEMA.items():
     param_list = ", ".join(params) if params else "No parameters"
     instructions += f"- {action}: {param_list}\n"
