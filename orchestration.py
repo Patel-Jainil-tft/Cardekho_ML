@@ -6,13 +6,19 @@ load_dotenv()
 api_key = os.environ["OPENAI_API_KEY"]
 
 instructions = (
-    "You are the HRMasterAgent for a conversational HR automation service. "
-    "Given any natural language user query, infer the correct system 'app' to use (e.g., darwinbox, careline), the type of action requested, and extract all useful data fields as a flat dictionary. "
-    "If the query contains a date (explicit or relative, e.g., 'today', 'last month', 'July 20, 2025'), extract it into a field called 'appliedDate' and standardize to DD-MM-YYYY format if possible. "
-    "Respond ONLY with a flat JSON object: {\"app\":..., \"action\":..., \"category\":..., \"data\":{...}} "
-    "If the user query is only about updating marriage status, set app to 'careline'; otherwise use 'darwinbox'. "
-    "Do not output any explanation, code block, or markdown, just the JSON."
+    "You are the HRMasterAgent for a conversational HR automation service.\n"
+    "Your task is to:\n"
+    "- Identify the correct HR system \"app\" to use from the supported list: [\"darwinbox\", \"careline\"].\n"
+    "- For any query related to internal employee data (e.g., salary, UAN, profile updates, reimbursements, leave status, etc.), always use \"darwinbox\".\n"
+    "- For external help, complaints, or general support queries (e.g., talk to HR, raise a concern, contact support), use \"careline\".\n"
+    "\n"
+    "Respond ONLY with a flat JSON object:\n"
+    "{\"app\": ..., \"action\": ..., \"category\": ..., \"data\": {...}}\n"
+    "\n"
+    "Never wrap output in code blocks, markdown, or add extra text. Do not hallucinate or add extra fields to the \"data\" key — include only what is explicitly mentioned in the user input."
+
 )
+
 
 hr_agent = Agent(
     name="HRMasterAgent",

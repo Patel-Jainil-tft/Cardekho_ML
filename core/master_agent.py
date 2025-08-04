@@ -35,40 +35,17 @@ class MasterAgent:
     async def route_request(self, req: QueryRequest):
         intent_dict = await extract_intent_and_slots(req)
         user_id = self._extract_user_id(req)
-        intent_dict["data"]["userId"] = user_id
+
+        intent_dict["user_input"] = req.message
+        intent = Intent(**intent_dict)
+        intent.user_input = req.message
+        intent.data["userId"] = user_id
 
         if hasattr(req, "active"):
-            intent_dict["data"]["active"] = req.active
-
-        intent = Intent(**intent_dict)
-        print(f"Received intent: {intent}")
-        action_key = intent.action.replace("-", "_").replace(" ", "_").lower()
-
-        matched_tool = None
-        for tool in self.mcp_tools_list:
-            tool_name = tool.get("name", tool).lower() if isinstance(tool, dict) else str(tool).lower()
-            if tool_name == action_key:
-                matched_tool = tool.get("name", tool)
-                break
-
-        if matched_tool:
-            mcp_payload = {"userId": req.userId,
-                           "active": req.active }
-            if matched_tool.lower() == "viewreimbursementstatus":
-                date_val = intent.data.get("appliedDate")
-                if not date_val:
-                    return AgentResponse(
-                        success=False,
-                        message="Please provide the date for which you want to check your reimbursement status.",
-                        missing="appliedDate"
-                    ), "mcp"
-                mcp_payload["appliedDate"] = date_val
-
-            mcp_result = self.mcp_client.call_action(matched_tool, mcp_payload)
-            logging.info(f"MCP tool result: {mcp_result}")
-            return AgentResponse(success=True, message="MCP tool executed", data=mcp_result), "mcp"
+            intent.data["active"] = req.active
 
         agent_name = (intent.app or "").lower()
+
         if agent_name in self.agents:
             agent_resp = await self.agents[agent_name].handle(intent)
             return agent_resp, agent_name
