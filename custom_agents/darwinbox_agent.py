@@ -17,7 +17,7 @@ class DarwinBoxAgent:
         instructions = (
             "You are the DarwinBox Tool Selector agent for HR workflows.\n"
             "Given an HR intent, extracted action, and parameters, "
-            "choose ONLY the correct DarwinBox MCP tool name from the supported list for this request.\n"
+            "Based upon the given information choose DarwinBox MCP tool name that best represents what the user wants to do from the supported list. If it is not available in supported list simply return NONE\n"
             "Respond ONLY with the tool name as a plain string—no explanation, JSON, or markdown.\n"
             "Supported tools:\n" +
             "\n".join(f"- {tool}" for tool in self.tool_names)
@@ -30,7 +30,7 @@ class DarwinBoxAgent:
         )
 
     async def handle(self, intent: Intent) -> AgentResponse:
-        intent_data=await extract_parameters(intent.user_input)
+        intent_data = await extract_parameters(intent.user_input)
         intent.data.update(intent_data)
         user_prompt = (
             f"user input: {intent.action}\nExtracted fields: {intent.data}\ncategory: {intent.category}\n"
@@ -39,22 +39,21 @@ class DarwinBoxAgent:
         result = await Runner.run(self.tool_agent, user_prompt)
         tool_name = result.final_output.strip().strip('"').strip("'")
 
-        user_id = intent.data.pop("userId", None)       
+        user_id = intent.data.pop("userId", None)
         if not user_id:
             return AgentResponse(
                 success=False,
                 message="userId is required for DarwinBox operations.",
                 missing="userId"
             )
+
         # Safely remove userId and active from intent.data after extracting
-
         active = intent.data.pop("active", None)
-
         print(f"Extracted ACTIVE status: {active}")
 
-        mcp_payload = {"userId": user_id,
-                       "active": active }
-        print(f"intent:{intent}")
+        mcp_payload = {"userId": user_id, "active": active}
+        print(f"intent: {intent}")
+
         if tool_name.lower() == "viewreimbursementstatus":
             date_val = intent.data.get("extracted_result", {}).get("appliedDate")
             if not date_val:
@@ -66,15 +65,14 @@ class DarwinBoxAgent:
             mcp_payload["appliedDate"] = date_val
         elif tool_name.lower() == "updateuserprofile":
             print(f"Extracted data for update: {intent.data}")
-
-
             mcp_payload["updateData"] = intent.data
 
-           
         logging.info(f"Selected tool: {tool_name} with payload: {mcp_payload}")
         print(f"Selected tool: {tool_name} with payload: {mcp_payload}")
+
         mcp_result = self.mcp_client.call_action(tool_name, mcp_payload)
         human_message = await format_mcp_response(mcp_result)
+
         return AgentResponse(
             success=True,
             message=human_message,

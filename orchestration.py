@@ -16,6 +16,7 @@ instructions = (
     "{\"app\": ..., \"action\": ..., \"category\": ..., \"data\": {...}}\n"
     "\n"
     "Never wrap output in code blocks, markdown, or add extra text. Do not hallucinate or add extra fields to the \"data\" key — include only what is explicitly mentioned in the user input."
+
 )
 
 
@@ -30,4 +31,6 @@ async def extract_intent_and_slots(query):
     result = await Runner.run(hr_agent, user_input)
     import json
     intent_data = json.loads(result.final_output)
+    intent_data["user_input"] = query.message
+    print(f"Extracted intent data: {intent_data}")
     return intent_data

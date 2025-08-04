@@ -35,15 +35,17 @@ class MasterAgent:
     async def route_request(self, req: QueryRequest):
         intent_dict = await extract_intent_and_slots(req)
         user_id = self._extract_user_id(req)
+
         intent_dict["user_input"] = req.message
         intent = Intent(**intent_dict)
         intent.user_input = req.message
         intent.data["userId"] = user_id
-        agent_name = (intent.app or "").lower()
 
         if hasattr(req, "active"):
             intent.data["active"] = req.active
-        
+
+        agent_name = (intent.app or "").lower()
+
         if agent_name in self.agents:
             agent_resp = await self.agents[agent_name].handle(intent)
             return agent_resp, agent_name
