@@ -28,6 +28,9 @@ class Intent(BaseModel):
     action: str
     category: Optional[str]
     data: Dict[str, Any]
+    organizationId: Optional[str] = None
+    jobId: Optional[str] = None
+    userRole: Optional[str] = None
 
     @field_validator("data")
     def validate_applied_date(cls, v):
@@ -43,3 +46,7 @@ class AgentResponse(BaseModel):
     message: str
     data: Optional[Dict[str, Any]] = None
     missing: Optional[str] = None
+    user_id: Optional[str] = ""          
+    organization_id: Optional[str] = ""
+    job_id: Optional[str] = "12345"  
+    user_role: Optional[str] = "employee"

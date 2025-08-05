@@ -33,21 +33,31 @@ class MasterAgent:
         return req.userId or ""
 
     async def route_request(self, req: QueryRequest):
+        if isinstance(req, dict):
+            req = QueryRequest(**req)
         intent_dict = await extract_intent_and_slots(req)
         user_id = self._extract_user_id(req)
+        organization_id = req.organizationId or ""
+
 
         intent_dict["user_input"] = req.message
         intent = Intent(**intent_dict)
         intent.user_input = req.message
         intent.data["userId"] = user_id
-
+        intent.organizationId = req.organizationId or ""
+        intent.jobId = req.jobId
+        intent.userRole = req.userRole or ""
         if hasattr(req, "active"):
             intent.data["active"] = req.active
 
         agent_name = (intent.app or "").lower()
-
+        intent.organizationId = organization_id
+        intent.jobId = req.jobId
+        intent.userRole = req.userRole or ""
         if agent_name in self.agents:
             agent_resp = await self.agents[agent_name].handle(intent)
+          
+            print("----------------------------------------------------- ")
             return agent_resp, agent_name
 
         return AgentResponse(
