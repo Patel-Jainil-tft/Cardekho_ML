@@ -6,7 +6,7 @@ myenv/
 
 # dotenv environment variables
 .env
-.env.*
+
 
 # VSCode settings
 .vscode/
