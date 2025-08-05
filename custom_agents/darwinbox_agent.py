@@ -69,7 +69,7 @@ class DarwinBoxAgent:
 
         logging.info(f"Selected tool: {tool_name} with payload: {mcp_payload}")
         print(f"Selected tool: {tool_name} with payload: {mcp_payload}")
-
+        print(f"📥 intent: {intent}")
         mcp_result = self.mcp_client.call_action(tool_name, mcp_payload)
         human_message = await format_mcp_response(mcp_result)
 
@@ -77,5 +77,9 @@ class DarwinBoxAgent:
             success=True,
             message=human_message,
             tool=tool_name,
-            data=mcp_result
+            #data=mcp_result,
+            user_id=user_id,
+            organization_id=intent.organizationId,
+            jobId=intent.jobId,
+            userRole=intent.userRole
         )
