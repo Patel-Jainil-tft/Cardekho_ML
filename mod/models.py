@@ -44,6 +44,7 @@ class Intent(BaseModel):
 class AgentResponse(BaseModel):
     success: bool
     message: str
+    tool: Optional[str] = None
     data: Optional[Dict[str, Any]] = None
     missing: Optional[str] = None
     user_id: Optional[str] = ""          

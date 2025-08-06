@@ -5,7 +5,8 @@ from orchestration import extract_intent_and_slots
 from custom_agents.darwinbox_agent import DarwinBoxAgent
 from custom_agents.careline_agent import CarelineAgent
 from integration.mcp_client import MCPServerClient
-
+from db.mongo import save_agent_response  
+import datetime
 logging.basicConfig(level=logging.INFO)
 
 class MasterAgent:
@@ -56,10 +57,30 @@ class MasterAgent:
         intent.userRole = req.userRole or ""
         if agent_name in self.agents:
             agent_resp = await self.agents[agent_name].handle(intent)
-          
+            final_payload = {
+                "jobId": intent.jobId,
+                "toolName": agent_name,
+                "tool": getattr(agent_resp, "tool",""),  
+                "userId": agent_resp.user_id,
+                "organizationId": agent_resp.organization_id,
+                "userRole": agent_resp.user_role,
+                "status": "ok" if agent_resp.success else "error",
+                "message": agent_resp.message,
+                "data": agent_resp.data,
+                "missing": getattr(agent_resp, "missing", ""),
+                "userInput": intent.user_input,
+                "intent": {
+                    "app": intent.app,
+                    "category": intent.category,
+                    "action": intent.action,
+                    "data": intent.data,  
+                }
+            }
+            save_agent_response(final_payload)
+
             print("----------------------------------------------------- ")
             return agent_resp, agent_name
-
+        
         return AgentResponse(
             success=False,
             message="No matching agent found."

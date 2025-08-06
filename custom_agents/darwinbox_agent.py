@@ -72,6 +72,7 @@ class DarwinBoxAgent:
         print(f"📥 intent: {intent}")
         mcp_result = self.mcp_client.call_action(tool_name, mcp_payload)
         human_message = await format_mcp_response(mcp_result)
+        print("tool_name:", tool_name)
 
         return AgentResponse(
             success=True,
