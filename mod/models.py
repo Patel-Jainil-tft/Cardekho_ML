@@ -43,6 +43,7 @@ class Intent(BaseModel):
                 )
         return v
 
+
 class AgentResponse(BaseModel):
     success: bool
     message: str

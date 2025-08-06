@@ -12,6 +12,8 @@ myenv/
 .vscode/
 
 pycache/
+*.pyc
+__pycache__/
 
 testing.py
 
