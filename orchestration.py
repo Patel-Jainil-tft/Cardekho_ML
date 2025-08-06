@@ -1,4 +1,5 @@
 import os
+import logging
 from dotenv import load_dotenv
 from agents import Agent, Runner
 
@@ -28,9 +29,13 @@ hr_agent = Agent(
 
 async def extract_intent_and_slots(query):
     user_input = f"User message: \"{query.message}\""
-    result = await Runner.run(hr_agent, user_input)
-    import json
-    intent_data = json.loads(result.final_output)
-    intent_data["user_input"] = query.message
-    print(f"Extracted intent data: {intent_data}")
-    return intent_data
+    try:
+        result = await Runner.run(hr_agent, user_input)
+        import json
+        intent_data = json.loads(result.final_output)
+        intent_data["user_input"] = query.message
+        logging.info(f"Extracted intent data: {intent_data}")
+        return intent_data
+    except Exception as e:
+        logging.exception("Failed to extract intent and slots.")
+        raise

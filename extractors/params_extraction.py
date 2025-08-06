@@ -1,4 +1,5 @@
 import os
+import logging
 from dotenv import load_dotenv
 from agents import Agent, Runner
 
@@ -20,11 +21,14 @@ hr_agent = Agent(
     instructions=instructions,
     model="gpt-4o-mini"
 )
-
 async def extract_parameters(user_input):
     user_input = f"User message: \"{user_input}\""
-    result = await Runner.run(hr_agent, user_input)
-    import json
-    intent_data = json.loads(result.final_output)
-    print(f"Extracted intent data: {intent_data}")
-    return intent_data
+    try:
+        result = await Runner.run(hr_agent, user_input)
+        import json
+        intent_data = json.loads(result.final_output)
+        logging.info(f"Extracted intent data: {intent_data}")
+        return intent_data
+    except Exception:
+        logging.exception("Failed to extract parameters.")
+        return {}

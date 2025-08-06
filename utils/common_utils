@@ -1,0 +1,39 @@
+import os
+from config_logs import logger
+from datetime import datetime
+from typing import Dict, Tuple
+from bullmq import Queue
+import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def get_worker_and_request():
+    """
+    Retrieves the appropriate worker and request queue settings based on the current environment.
+
+    Args:
+        None: The function fetches environment variables automatically.
+
+    Raises:
+        KeyError: If required environment variables ('PROD_NLP_2_WORKER', 'STAGING_NLP_2_WORKER', etc.) are missing.
+        ValueError: If 'ENVIRONMENT' is set to an invalid value.
+
+    Returns:
+        Tuple[str, str]: A tuple containing ('nlp_2_worker', 'request_2_nlp') corresponding to the selected environment.
+    """
+    nlp_2_worker = None
+    request_2_nlp = None
+    ENVIRONMENT = os.environ.get("ENVIRONMENT")
+    if ENVIRONMENT == "prod":
+        #logger.info("\n======== prod server ========")
+        nlp_2_worker = os.environ.get("PROD_NLP_2_WORKER")
+        request_2_nlp = "request_nlp_queue"
+    elif ENVIRONMENT == "staging":
+        logger.info("\n======== staging server ========")
+        print("Staging server detected.")   
+        nlp_2_worker = os.environ.get("STAGING_NLP_2_WORKER")
+        request_2_nlp = "request_nlp_queue"
+    else:
+        logger.info("Invalid environment.")
+    return nlp_2_worker, request_2_nlp

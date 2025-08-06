@@ -4,11 +4,11 @@ from datetime import datetime
 
 class QueryRequest(BaseModel):
     message: str
-    jobId: Optional[str] = None  # Changed to camelCase to match your input
+    jobId: Optional[str] = None
     userId: Optional[str] = None
     chatPlatform: Optional[str] = None
-    orgInitiationId: Optional[str] = None  # Keep this if still used elsewhere
-    organizationId: Optional[str] = None  # New - from your input
+    orgInitiationId: Optional[str] = None
+    organizationId: Optional[str] = None
     missing: Optional[str] = None
     incorrect: Optional[str] = None
     chatHistory: Optional[str] = None
@@ -17,14 +17,13 @@ class QueryRequest(BaseModel):
     region: Optional[str] = None
     country: Optional[str] = None
     FollowupAgent: Optional[str] = None
-    applicable: Optional[list] = None   # New
-    token: Optional[dict] = None        # New
-    active: int
+    applicable: Optional[list] = None
+    token: Optional[dict] = None
+    active: Optional[int] = None
 
 class Intent(BaseModel):
     user_input: str
     app: str
-    user_input: str
     action: str
     category: Optional[str]
     data: Dict[str, Any]
@@ -39,15 +38,18 @@ class Intent(BaseModel):
             try:
                 datetime.strptime(applied_date, "%d-%m-%Y")
             except ValueError:
-                raise ValueError(f"appliedDate '{applied_date}' is not in DD-MM-YYYY format or not a real date.")
+                raise ValueError(
+                    f"appliedDate '{applied_date}' is not in DD-MM-YYYY format or not a real date."
+                )
         return v
+
 class AgentResponse(BaseModel):
     success: bool
     message: str
     tool: Optional[str] = None
     data: Optional[Dict[str, Any]] = None
     missing: Optional[str] = None
-    user_id: Optional[str] = ""          
+    user_id: Optional[str] = ""
     organization_id: Optional[str] = ""
-    job_id: Optional[str] = "12345"  
+    jobId: Optional[str] = None
     user_role: Optional[str] = "employee"

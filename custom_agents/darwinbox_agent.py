@@ -5,15 +5,20 @@ from agents import Agent, Runner
 from integration.mcp_client import MCPServerClient
 from custom_agents.response_formatter import format_mcp_response
 from extractors.params_extraction import extract_parameters
+
 logging.basicConfig(level=logging.INFO)
 
 class DarwinBoxAgent:
     def __init__(self):
         self.mcp_client = MCPServerClient(base_url=os.getenv("MCP_SERVER_URL", "http://localhost:3001/mcp"))
-        resp = self.mcp_client.fetch_tools()
-        self.mcp_tools_list = resp.get("result", {}).get("tools", [])
+        try:
+            resp = self.mcp_client.fetch_tools()
+            self.mcp_tools_list = resp.get("result", {}).get("tools", [])
+        except Exception:
+            logging.exception("Failed to fetch tools from MCP.")
+            self.mcp_tools_list = []
+
         self.tool_names = [tool["name"] for tool in self.mcp_tools_list]
-        
         instructions = (
             "You are the DarwinBox Tool Selector agent for HR workflows.\n"
             "Given an HR intent, extracted action, and parameters, "
@@ -30,57 +35,54 @@ class DarwinBoxAgent:
         )
 
     async def handle(self, intent: Intent) -> AgentResponse:
-        intent_data = await extract_parameters(intent.user_input)
-        intent.data.update(intent_data)
-        user_prompt = (
-            f"user input: {intent.action}\nExtracted fields: {intent.data}\ncategory: {intent.category}\n"
-            "Which DarwinBox MCP tool from the supported list is the best match?"
-        )
-        result = await Runner.run(self.tool_agent, user_prompt)
-        tool_name = result.final_output.strip().strip('"').strip("'")
-
-        user_id = intent.data.pop("userId", None)
-        if not user_id:
-            return AgentResponse(
-                success=False,
-                message="userId is required for DarwinBox operations.",
-                missing="userId"
+        try:
+            intent_data = await extract_parameters(intent.user_input)
+            intent.data.update(intent_data)
+            user_prompt = (
+                f"user input: {intent.action}\nExtracted fields: {intent.data}\ncategory: {intent.category}\n"
+                "Which DarwinBox MCP tool from the supported list is the best match?"
             )
-
-        # Safely remove userId and active from intent.data after extracting
-        active = intent.data.pop("active", None)
-        print(f"Extracted ACTIVE status: {active}")
-
-        mcp_payload = {"userId": user_id, "active": active}
-        print(f"intent: {intent}")
-
-        if tool_name.lower() == "viewreimbursementstatus":
-            date_val = intent.data.get("extracted_result", {}).get("appliedDate")
-            if not date_val:
+            result = await Runner.run(self.tool_agent, user_prompt)
+            tool_name = result.final_output.strip().strip('"').strip("'")
+            user_id = intent.data.pop("userId", None)
+            if not user_id:
                 return AgentResponse(
                     success=False,
-                    message="Please provide the date for which you want to check your reimbursement status.",
-                    missing="appliedDate"
+                    message="userId is required for DarwinBox operations.",
+                    missing="userId"
                 )
-            mcp_payload["appliedDate"] = date_val
-        elif tool_name.lower() == "updateuserprofile":
-            print(f"Extracted data for update: {intent.data}")
-            mcp_payload["updateData"] = intent.data
-
-        logging.info(f"Selected tool: {tool_name} with payload: {mcp_payload}")
-        print(f"Selected tool: {tool_name} with payload: {mcp_payload}")
-        print(f"📥 intent: {intent}")
-        mcp_result = self.mcp_client.call_action(tool_name, mcp_payload)
-        human_message = await format_mcp_response(mcp_result)
-        print("tool_name:", tool_name)
-
-        return AgentResponse(
-            success=True,
-            message=human_message,
-            tool=tool_name,
-            #data=mcp_result,
-            user_id=user_id,
-            organization_id=intent.organizationId,
-            jobId=intent.jobId,
-            userRole=intent.userRole
-        )
+            active = intent.data.pop("active", None)
+            mcp_payload = {"userId": user_id, "active": active}
+            if tool_name.lower() == "viewreimbursementstatus":
+                date_val = intent.data.get("extracted_result", {}).get("appliedDate")
+                if not date_val:
+                    return AgentResponse(
+                        success=False,
+                        message="Please provide the date for which you want to check your reimbursement status.",
+                        missing="appliedDate"
+                    )
+                mcp_payload["appliedDate"] = date_val
+            elif tool_name.lower() == "updateuserprofile":
+                mcp_payload["updateData"] = intent.data
+            try:
+                mcp_result = self.mcp_client.call_action(tool_name, mcp_payload)
+            except Exception:
+                logging.exception("Exception during MCP action call.")
+                mcp_result = {"status": "error", "error": "MCP call failed"}
+            try:
+                human_message = await format_mcp_response(mcp_result)
+            except Exception:
+                logging.exception("Failed to format MCP response.")
+                human_message = "Could not generate user-friendly response."
+            return AgentResponse(
+                success=True,
+                message=human_message,
+                tool=tool_name,
+                user_id=user_id,
+                organization_id=intent.organizationId,
+                jobId=intent.jobId,
+                userRole=intent.userRole
+            )
+        except Exception:
+            logging.exception("DarwinBoxAgent handle() error.")
+            return AgentResponse(success=False, message="Exception in DarwinBoxAgent")

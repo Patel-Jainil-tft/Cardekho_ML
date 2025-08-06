@@ -6,7 +6,7 @@ async def main():
     queue = Queue("request_nlp_queue")  # Or your actual REQUEST_2_NLP queue name
 
     payload = {
-        "message": "show me reimbursement status of 22-07-2025",
+        "message": "show me reimbursement status on 22-07-2025",
         "jobId": "684921e55caa9eecf4c9e011",
         "userId": "65c0d045802b48425f607e3c",
         "chatPlatform": "webSocket",

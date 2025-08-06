@@ -10,10 +10,7 @@ class MCPServerClient:
             "jsonrpc": "2.0",
             "id": 1,
             "method": "tools/call",
-            "params": {
-                "name": tool_name,
-                "arguments": arguments
-            }
+            "params": {"name": tool_name, "arguments": arguments}
         }
         try:
             resp = requests.post(
