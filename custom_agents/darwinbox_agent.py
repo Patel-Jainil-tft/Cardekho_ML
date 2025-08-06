@@ -70,7 +70,7 @@ class DarwinBoxAgent:
                 logging.exception("Exception during MCP action call.")
                 mcp_result = {"status": "error", "error": "MCP call failed"}
             try:
-                human_message = await format_mcp_response(mcp_result)
+                human_message = await format_mcp_response(intent.user_input,mcp_result)
             except Exception:
                 logging.exception("Failed to format MCP response.")
                 human_message = "Could not generate user-friendly response."
