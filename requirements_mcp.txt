@@ -44,4 +44,11 @@ wheel==0.43.0
 fastapi
 dotenv
 contrib
+agents
 openai-agents
+redis
+bullmq
+pydantic
+dotenv
+pymongo
+

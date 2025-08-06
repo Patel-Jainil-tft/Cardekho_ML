@@ -3,10 +3,10 @@ import asyncio
 from bullmq import Queue
 
 async def main():
-    queue = Queue("request_nlp_queue")  # Or your actual REQUEST_2_NLP queue name
+    queue = Queue("request_2_nlp")  # Or your actual REQUEST_2_NLP queue name
 
     payload = {
-        "message": "show me reimbursement status on 22-07-2025",
+        "message": "pls show list of repotees",
         "jobId": "684921e55caa9eecf4c9e011",
         "userId": "65c0d045802b48425f607e3c",
         "chatPlatform": "webSocket",
@@ -17,7 +17,7 @@ async def main():
         "applicable": ["darwinbox", "careline"],
         "token": {
             "darwinbox": {
-                "employee_no": "10073867"
+                "employee_no": "10067563"
             }
         },
         "active": 0

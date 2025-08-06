@@ -39,7 +39,7 @@ class DarwinBoxAgent:
             intent_data = await extract_parameters(intent.user_input)
             intent.data.update(intent_data)
             user_prompt = (
-                f"user input: {intent.action}\nExtracted fields: {intent.data}\ncategory: {intent.category}\n"
+                f"user input: {intent.user_input}\nExtracted fields: {intent.data}\ncategory: {intent.category}\n"
                 "Which DarwinBox MCP tool from the supported list is the best match?"
             )
             result = await Runner.run(self.tool_agent, user_prompt)
