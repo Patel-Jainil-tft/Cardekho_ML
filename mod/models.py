@@ -52,4 +52,4 @@ class AgentResponse(BaseModel):
     user_id: Optional[str] = ""
     organization_id: Optional[str] = ""
     jobId: Optional[str] = None
-    user_role: Optional[str] = "employee"
+    user_role: Optional[str] = ""

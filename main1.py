@@ -16,11 +16,11 @@ def get_worker_and_request():
     ENVIRONMENT = os.environ.get("ENVIRONMENT")
     if ENVIRONMENT == "prod":
         nlp_2_worker = os.environ.get("PROD_NLP_2_WORKER")
-        request_2_nlp = os.environ.get("NLP_2_WORKER")
+        request_2_nlp = os.environ.get("REQUEST_2_NLP")
     elif ENVIRONMENT == "staging":
         logging.info("\n======== staging server ========")
         nlp_2_worker = os.environ.get("STAGING_NLP_2_WORKER")
-        request_2_nlp = os.environ.get("NLP_2_WORKER")
+        request_2_nlp = os.environ.get("REQUEST_2_NLP")
     else:
         logging.error("Invalid environment.")
         raise ValueError("Invalid ENVIRONMENT variable.")

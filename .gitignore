@@ -11,3 +11,7 @@ myenv/
 # VSCode settings
 .vscode/
 
+pycache/
+
+testing.py
+
