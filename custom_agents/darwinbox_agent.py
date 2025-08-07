@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 class DarwinBoxAgent:
     def __init__(self):
-        self.mcp_client = MCPServerClient(base_url=os.getenv("MCP_SERVER_URL", "http://localhost:3001/mcp"))
+        self.mcp_client = MCPServerClient(base_url=os.getenv("MCP_SERVER_URL", "http://192.168.112.32:3001/mcp"))
         try:
             resp = self.mcp_client.fetch_tools()
             self.mcp_tools_list = resp.get("result", {}).get("tools", [])

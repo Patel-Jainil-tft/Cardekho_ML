@@ -16,7 +16,7 @@ class MasterAgent:
             "darwinbox": DarwinBoxAgent(),
             "careline": CarelineAgent(),
         }
-        base_url = os.getenv("MCP_SERVER_URL", "http://localhost:3001/mcp")
+        base_url = os.getenv("MCP_SERVER_URL", "http://192.168.112.32:3001/mcp")
         self.mcp_client = MCPServerClient(base_url=base_url)
         try:
             tools_resp = self.mcp_client.fetch_tools()
