@@ -48,6 +48,10 @@ agents
 openai-agents
 redis
 bullmq
+pymongo
+
+redis
+bullmq
 pydantic
 dotenv
 pymongo
