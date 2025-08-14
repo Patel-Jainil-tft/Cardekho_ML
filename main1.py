@@ -49,7 +49,8 @@ async def handle_job(job: Job, queue_name: str):
             "missing": getattr(agent_resp, "missing", ""),
             "userId": agent_resp.user_id,
             "organizationId": agent_resp.organization_id,
-            "userRole": getattr(agent_resp, "user_role", "employee")        }
+            "userRole": getattr(agent_resp, "user_role", "employee")        
+        }
 
         logging.info(f"Response Payload to Output Queue: {json.dumps(response_payload, indent=2)}")
         await output_queue.add("MLJobOutput", response_payload)

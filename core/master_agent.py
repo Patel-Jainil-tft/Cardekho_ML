@@ -30,11 +30,13 @@ class MasterAgent:
     def _extract_user_id(req):
         token = getattr(req, "token", None)
         if token and isinstance(token, dict):
-            dbx = token.get("darwinbox")
-            if dbx and isinstance(dbx, dict):
-                emp_no = dbx.get("employee_no")
-                if emp_no:
-                    return emp_no
+            platform = token.get("platform")
+            if platform and isinstance(platform, dict):
+                dbx = platform.get("darwinbox")
+                if dbx and isinstance(dbx, dict):
+                    emp_no = dbx.get("employee_no")
+                    if emp_no:
+                        return emp_no
         return req.userId or ""
 
     async def route_request(self, req: QueryRequest):
